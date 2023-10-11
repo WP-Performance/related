@@ -72,6 +72,13 @@ function wp_perf_loop_query($query)
             $query['tax_query'] = $tax_query;
         }
     }
+
+    // remove filter for avoid conflict with other loop block
+    remove_filter(
+        'query_loop_block_query_vars',
+        'wp_perf_loop_query'
+    );
+
     return $query;
 }
 
