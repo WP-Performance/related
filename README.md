@@ -3,6 +3,10 @@
 
 This block is a variation of the block Loop Query. It allows to display posts related by category.
 
+You can find the block "Related Loop" in "THEME" section in the inserter of Gutenberg editor.
+
+![](screenshot.png)
+
 
 ## Links page WP developer resources
 
