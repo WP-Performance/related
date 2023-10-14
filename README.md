@@ -5,7 +5,7 @@ This block is a variation of the block Loop Query. It allows to display posts re
 
 You can find the block "Related Loop" in "THEME" section in the inserter of Gutenberg editor.
 
-This variation work with all your post type or custom post type. You choose the taxonomy name for search related element.
+This variation work with all your post type or custom post type. You choose the taxonomy name for find related elements.
 
 
 ![](screenshot.png)
