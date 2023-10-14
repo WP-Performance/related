@@ -1,5 +1,7 @@
 <?php
 
+namespace WPPerformanceRelated;
+
 /**
  * Plugin Name:       Related Loop Block
  * Description:       Add variation to loop block to display related posts
@@ -27,10 +29,31 @@ function wp_perf_editor_assets()
         array('wp-blocks'),
         filemtime(plugin_dir_path(__FILE__) . 'assets/block-variations.js')
     );
+
+    // file exist
+    if (!file_exists(plugin_dir_path(__FILE__) . 'build/index.asset.php')) {
+        return;
+    }
+    $infos = require_once(plugin_dir_path(__FILE__) . 'build/index.asset.php');
+
+    wp_enqueue_script(
+        'wp-performance-related-inspector',
+        plugin_dir_url(__FILE__) . 'build/index.js',
+        $infos['dependencies'],
+        $infos['version']
+    );
 }
 
-add_action('enqueue_block_editor_assets', 'wp_perf_editor_assets');
+add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\wp_perf_editor_assets');
 
+
+/**
+ * just for store taxonomy between filter
+ */
+class WPPerformanceTaxonomyRelated
+{
+    public static $taxonomyRelated = '';
+}
 
 /**
  * update query for related posts
@@ -42,18 +65,19 @@ function wp_perf_loop_query($query)
     if ($post) {
         // remove current post from results
         array_push($query['post__not_in'], $post->ID);
-        // get taxonomies name for this post type
-        $tax = get_post_taxonomies($post);
+
         $cats = [];
-        foreach ($tax as $key => $value) {
-            // get terms for the current post
-            $terms = get_the_terms($post->ID, $value);
+        if (
+            WPPerformanceTaxonomyRelated::$taxonomyRelated && WPPerformanceTaxonomyRelated::$taxonomyRelated !== ''
+        ) {
+            $terms = get_the_terms($post->ID, WPPerformanceTaxonomyRelated::$taxonomyRelated);
             if ($terms) {
                 foreach ($terms as $key => $value) {
                     array_push($cats, $value);
                 }
             }
         }
+
         $tax_query = null;
         if (count($cats)) {
             $tax_query = [];
@@ -76,8 +100,9 @@ function wp_perf_loop_query($query)
     // remove filter for avoid conflict with other loop block
     remove_filter(
         'query_loop_block_query_vars',
-        'wp_perf_loop_query'
+        __NAMESPACE__ . '\wp_perf_loop_query'
     );
+    WPPerformanceTaxonomyRelated::$taxonomyRelated = '';
 
     return $query;
 }
@@ -93,9 +118,13 @@ add_filter(
     function ($prerender, $block) {
         // if good namespace
         if ($block['attrs'] && array_key_exists('namespace', $block['attrs']) && 'wp-performance/related' === $block['attrs']['namespace']) {
+
+            // store taxonomy from editor select for use in query
+            WPPerformanceTaxonomyRelated::$taxonomyRelated = array_key_exists('taxonomyRelated', $block['attrs']) ? $block['attrs']['taxonomyRelated'] : '';
+
             add_filter(
                 'query_loop_block_query_vars',
-                'wp_perf_loop_query'
+                __NAMESPACE__ . '\wp_perf_loop_query'
             );
         }
     },

@@ -1,0 +1,29 @@
+{
+  "name": "wp-performance-related",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WP-Performance/related.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WP-Performance/related/issues"
+  },
+  "homepage": "https://github.com/WP-Performance/related#readme",
+  "devDependencies": {
+    "@wordpress/block-editor": "^12.11.1",
+    "@wordpress/components": "^25.9.1",
+    "@wordpress/compose": "^6.20.0",
+    "@wordpress/data": "^9.13.1",
+    "@wordpress/i18n": "^4.43.0",
+    "@wordpress/scripts": "^26.14.0"
+  }
+}
