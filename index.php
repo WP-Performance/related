@@ -2,6 +2,12 @@
 
 namespace WPPerformanceRelated;
 
+use QueryLoopRelated;
+
+require_once(plugin_dir_path(__FILE__) . 'inc/QueryLoopRelated.php');
+
+
+
 /**
  * Plugin Name:       Related Loop Block
  * Description:       Add variation to loop block to display related posts
@@ -18,116 +24,5 @@ namespace WPPerformanceRelated;
  */
 
 
-/**
- * add variation to loop block
- */
-function wp_perf_editor_assets()
-{
-    wp_enqueue_script(
-        'wp-performance-related',
-        plugin_dir_url(__FILE__) . 'assets/block-variations.js',
-        array('wp-blocks'),
-        filemtime(plugin_dir_path(__FILE__) . 'assets/block-variations.js')
-    );
-
-    // file exist
-    if (!file_exists(plugin_dir_path(__FILE__) . 'build/index.asset.php')) {
-        return;
-    }
-    $infos = require_once(plugin_dir_path(__FILE__) . 'build/index.asset.php');
-
-    wp_enqueue_script(
-        'wp-performance-related-inspector',
-        plugin_dir_url(__FILE__) . 'build/index.js',
-        $infos['dependencies'],
-        $infos['version']
-    );
-}
-
-add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\wp_perf_editor_assets');
-
-
-/**
- * just for store taxonomy between filter
- */
-class WPPerformanceTaxonomyRelated
-{
-    public static $taxonomyRelated = '';
-}
-
-/**
- * update query for related posts
- */
-function wp_perf_loop_query($query)
-{
-    global $post;
-
-    if ($post) {
-        // remove current post from results
-        array_push($query['post__not_in'], $post->ID);
-
-        $cats = [];
-        if (
-            WPPerformanceTaxonomyRelated::$taxonomyRelated && WPPerformanceTaxonomyRelated::$taxonomyRelated !== ''
-        ) {
-            $terms = get_the_terms($post->ID, WPPerformanceTaxonomyRelated::$taxonomyRelated);
-            if ($terms) {
-                foreach ($terms as $key => $value) {
-                    array_push($cats, $value);
-                }
-            }
-        }
-
-        $tax_query = null;
-        if (count($cats)) {
-            $tax_query = [];
-            // add taxonomies related to query
-            foreach ($cats as $key => $value) {
-                array_push($tax_query, [
-                    'taxonomy' => $value->taxonomy,
-                    'field'    => 'slug',
-                    'terms'    => $value->slug
-                ]);
-            }
-        }
-        if ($tax_query) {
-            // add condition relation
-            $tax_query['relation'] = 'OR';
-            $query['tax_query'] = $tax_query;
-        }
-    }
-
-    // remove filter for avoid conflict with other loop block
-    remove_filter(
-        'query_loop_block_query_vars',
-        __NAMESPACE__ . '\wp_perf_loop_query'
-    );
-    WPPerformanceTaxonomyRelated::$taxonomyRelated = '';
-
-    return $query;
-}
-
-
-
-
-/**
- * filter block to add query vars
- */
-add_filter(
-    'pre_render_block',
-    function ($prerender, $block) {
-        // if good namespace
-        if ($block['attrs'] && array_key_exists('namespace', $block['attrs']) && 'wp-performance/related' === $block['attrs']['namespace']) {
-
-            // store taxonomy from editor select for use in query
-            WPPerformanceTaxonomyRelated::$taxonomyRelated = array_key_exists('taxonomyRelated', $block['attrs']) ? $block['attrs']['taxonomyRelated'] : '';
-
-            add_filter(
-                'query_loop_block_query_vars',
-                __NAMESPACE__ . '\wp_perf_loop_query'
-            );
-        }
-    },
-    1,
-    2
-);
+// init
+new QueryLoopRelated();

@@ -6,7 +6,6 @@ import { useSelect } from "@wordpress/data";
 const TaxonomySelect = (props) => {
   const { getTaxonomies, attributes, setAttributes } = props;
   const { query, taxonomyRelated } = attributes;
-  console.log(props);
 
   const taxonomies = useSelect(
     (select) => select("core").getTaxonomies({ type: query.postType }),
