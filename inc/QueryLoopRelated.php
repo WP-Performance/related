@@ -1,5 +1,8 @@
 <?php
 
+namespace WPPerformanceRelated\Inc;
+
+
 /**
  *
  */

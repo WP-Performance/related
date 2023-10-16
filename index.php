@@ -2,7 +2,7 @@
 
 namespace WPPerformanceRelated;
 
-use QueryLoopRelated;
+use WPPerformanceRelated\Inc\QueryLoopRelated;
 
 require_once(plugin_dir_path(__FILE__) . 'inc/QueryLoopRelated.php');
 
